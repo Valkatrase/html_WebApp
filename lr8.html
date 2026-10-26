@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ЛР 8</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="site">
+    <div class="container">
+      <div class="brand">WebApp</div>
+      <nav class="menu">
+        <a href="index.html">ЛР 1</a>
+        <a href="lr2.html">ЛР 2</a>
+        <a href="lr3.html">ЛР 3</a>
+        <a href="lr4.html">ЛР 4</a>
+        <a href="lr5.html">ЛР 5</a>
+        <a href="lr6.html">ЛР 6</a>
+        <a href="lr7.html">ЛР 7</a>
+        <a href="lr8.html" class="active">ЛР 8</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <h1>ЛР 8</h1>
+    </div>
+    <div class="msg" id="flash"></div>
+    <div id="view" style="margin-top:16px"></div>
+    <script>
+      const $ = id => document.getElementById(id);
+      const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const CK = 'auth_token', DB = 'lr8_users';
+      let cookieNote = '';
+
+      async function hash(t) {
+        if (window.crypto && crypto.subtle) {
+          const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
+          return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+        }
+        let h = 5381; for (const c of t) h = ((h << 5) + h + c.charCodeAt(0)) >>> 0; return 'x' + h;
+      }
+
+      function setCk(v, days) {
+        const exp = new Date(Date.now() + days * 864e5).toUTCString();
+        document.cookie = `${CK}=${encodeURIComponent(v)}; expires=${exp}; path=/; SameSite=Lax`;
+        if (getCk() !== v) { localStorage.setItem('ck_' + CK, JSON.stringify({ v, exp: Date.now() + days * 864e5 })); cookieNote = ' (браузер не зберігає Cookie)'; }
+      }
+      function getCk() {
+        const m = document.cookie.split('; ').find(c => c.startsWith(CK + '='));
+        if (m) return decodeURIComponent(m.split('=')[1]);
+        try { const o = JSON.parse(localStorage.getItem('ck_' + CK)); if (o && o.exp > Date.now()) return o.v; } catch (e) { }
+        return null;
+      }
+      function delCk() { document.cookie = `${CK}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`; localStorage.removeItem('ck_' + CK); }
+
+      const users = () => JSON.parse(localStorage.getItem(DB) || '{}');
+      const save = u => localStorage.setItem(DB, JSON.stringify(u));
+      const flash = (t, ok) => { $('flash').className = 'msg ' + (ok ? 'ok' : 'err'); $('flash').innerHTML = t; };
+
+      async function autoLogin() {
+        if (sessionStorage.getItem('user')) return;
+        const c = getCk(); if (!c) return;
+        const i = c.indexOf(':'), lg = c.slice(0, i), tk = c.slice(i + 1), u = users()[lg];
+        if (u && u.token && tk && u.token === await hash(tk)) { sessionStorage.setItem('user', lg); sessionStorage.setItem('via', 'cookie'); }
+        else delCk();
+      }
+
+      async function register(e) {
+        e.preventDefault();
+        const lg = $('l2').value.trim().toLowerCase(), em = $('e2').value.trim(), p1 = $('p2').value, p2 = $('p3').value, err = [], u = users();
+        if (!/^[a-z0-9_]{3,20}$/.test(lg)) err.push('Логін цифри або символи');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) err.push('Не вірний e-mail.');
+        if (p1.length < 6) err.push('Пароль  не менше ніж 6 символів.');
+        if (p1 !== p2) err.push('Пароль не зберігся.');
+        if (u[lg]) err.push('Цей логін вже використовуеться.');
+        if (err.length) { flash(err.map(esc).join('<br>'), false); return; }
+        u[lg] = { email: em, hash: await hash(p1), created: new Date().toLocaleString('uk-UA'), token: '' };
+        save(u); sessionStorage.setItem('user', lg); sessionStorage.setItem('via', 'password');
+        flash('Реєстрацію завершено. Ви успішно увійшли до акаунту.', true); view();
+      }
+      async function login(e) {
+        e.preventDefault();
+        const lg = $('l1').value.trim().toLowerCase(), u = users();
+        if (u[lg] && u[lg].hash === await hash($('p1').value)) {
+          sessionStorage.setItem('user', lg); sessionStorage.setItem('via', 'password');
+          cookieNote = '';
+          if ($('rem').checked) {
+            const tk = [...crypto.getRandomValues(new Uint8Array(32))].map(x => x.toString(16).padStart(2, '0')).join('');
+            u[lg].token = await hash(tk); save(u); setCk(lg + ':' + tk, 30);
+          }
+          flash('Вхід успішний.' + esc(cookieNote), true); view();
+        } else flash('Невірний логін або пароль.', false);
+      }
+      function logout() {
+        const lg = sessionStorage.getItem('user'), u = users();
+        if (u[lg]) { u[lg].token = ''; save(u); }
+        delCk(); sessionStorage.removeItem('user'); sessionStorage.removeItem('via');
+        flash('Ви вийшли з акаунта.', true); view();
+      }
+
+      function view() {
+        const lg = sessionStorage.getItem('user'), info = lg && users()[lg];
+        if (lg && info) {
+          $('view').innerHTML = `<div class="card accent"><h2>Вітаємо, ${esc(lg)}!</h2><div class="stats">
+      <div class="stat"><b style="font-size:16px">${esc(info.email)}</b>e-mail</div>
+      <div class="stat"><b style="font-size:16px">${esc(info.created)}</b>дата реєстрації</div>
+      <div class="stat"><b style="font-size:16px">${sessionStorage.getItem('via') === 'cookie' ? 'через Cookie' : 'за паролем'}</b>спосіб входу</div></div>
+      <p class="muted" style="margin-bottom:12px">Cookie автовходу: ${getCk() ? 'є (діє до 30 днів)' : 'не встановлено'}.</p>
+      <button class="btn" id="out">Вийти</button></div>`;
+          $('out').onclick = logout;
+        } else {
+          $('view').innerHTML = `<div class="grid-2">
+      <div class="card accent"><h2>Вхід</h2><form id="fl">
+        <div class="field"><label for="l1">Логін</label><input id="l1" required></div>
+        <div class="field"><label for="p1">Пароль</label><input id="p1" type="password" required></div>
+        <div class="field"><label><input type="checkbox" id="rem">Запам’ятати мене на 30 днів</label></div>
+        <button class="btn" type="submit">Увійти</button></form></div>
+      <div class="card"><h2>Реєстрація</h2><form id="fr">
+        <div class="field"><label for="l2">Логін</label><input id="l2" required></div>
+        <div class="field"><label for="e2">E-mail</label><input id="e2" type="email" required></div>
+        <div class="field"><label for="p2">Пароль</label><input id="p2" type="password" required></div>
+        <div class="field"><label for="p3">Повторіть пароль</label><input id="p3" type="password" required></div>
+        <button class="btn" type="submit">Зареєструватися</button></form></div></div>`;
+          $('fl').onsubmit = login; $('fr').onsubmit = register;
+        }
+      }
+      autoLogin().then(() => { if (sessionStorage.getItem('via') === 'cookie' && sessionStorage.getItem('user')) flash('Автоматичний вхід.', true); view(); });
+    </script>
+  </main>
+  <footer class="site">
+    <div class="container">Богдан, 2381</div>
+  </footer>
+</body>
+
+</html>

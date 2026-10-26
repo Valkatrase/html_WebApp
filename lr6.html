@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ЛР 6</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="site">
+    <div class="container">
+      <div class="brand">WebApp</div>
+      <nav class="menu">
+        <a href="index.html">ЛР 1</a>
+        <a href="lr2.html">ЛР 2</a>
+        <a href="lr3.html">ЛР 3</a>
+        <a href="lr4.html">ЛР 4</a>
+        <a href="lr5.html">ЛР 5</a>
+        <a href="lr6.html" class="active">ЛР 6</a>
+        <a href="lr7.html">ЛР 7</a>
+        <a href="lr8.html">ЛР 8</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <h1>ЛР 6</h1>
+    <div class="card accent" id="sBox"></div>
+    <div class="card" id="oBox"></div>
+    <div class="card" id="mBox"></div>
+    <script>
+      const $ = id => document.getElementById(id);
+      const money = x => x.toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' грн';
+      const students = { 'Олена': [5, 4, 5, 5, 4], 'Максим': [3, 4, 4, 3, 5], 'Ірина': [5, 5, 5, 4, 5], 'Дмитро': [2, 3, 3, 4, 3], 'Богдан': [4, 5, 4, 5, 5] };
+      const items = [['Клавіатура', 1850, 2], ['Миша', 920, 3], ['Монітор 27"', 8400, 1], ['USB-хаб', 450, 4]];
+      const factorial = n => { let r = 1; for (let i = 2; i <= n; i++) r *= i; return r; };
+      const fib = n => { const a = [0, 1]; for (let i = 2; i < n; i++) a.push(a[i - 1] + a[i - 2]); return a.slice(0, n); };
+      function primes(max) {
+        const s = new Array(max + 1).fill(true);
+        for (let i = 2; i * i <= max; i++) if (s[i]) for (let j = i * i; j <= max; j += i) s[j] = false;
+        return s.map((v, i) => v ? i : 0).filter(i => i >= 2);
+      }
+      //
+      const st = Object.entries(students).map(([name, g]) => ({ name, g, avg: g.reduce((a, b) => a + b, 0) / g.length, max: Math.max(...g), min: Math.min(...g) }))
+        .sort((a, b) => b.avg - a.avg);
+      $('sBox').innerHTML = '<h2>Успішність студентів</h2><div class="row head cols-5"><div>#</div><div>Студент</div><div>Середній</div><div>Макс.</div><div>Мін.</div></div>' +
+        st.map((s, i) => `<div class="row cols-5${i === 0 ? ' best' : ''}"><div>${i + 1}</div><div>${s.name} <span class="muted">(${s.g.join(', ')})</span></div><div>${s.avg.toFixed(2)}</div><div>${s.max}</div><div>${s.min}</div></div>`).join('') +
+        `<p class="muted" style="margin-top:10px">Найвищий середній бал: <b>${st[0].name}</b> (${st[0].avg.toFixed(2)}).</p>`;
+      //
+      const sub = items.reduce((t, i) => t + i[1] * i[2], 0), vat = sub * 0.2;
+      $('oBox').innerHTML = '<h2>Розрахунок замовлення</h2><div class="row head cols-4"><div>Товар</div><div>Ціна × к-сть</div><div></div><div>Сума</div></div>' +
+        items.map(i => `<div class="row cols-4"><div>${i[0]}</div><div>${money(i[1])} × ${i[2]}</div><div></div><div>${money(i[1] * i[2])}</div></div>`).join('') +
+        `<div class="stats" style="margin-top:12px"><div class="stat"><b>${money(sub)}</b>без ПДВ</div><div class="stat"><b>${money(vat)}</b>ПДВ 20%</div><div class="stat"><b>${money(sub + vat)}</b>до сплати</div></div>`;
+      //
+      $('mBox').innerHTML = `<h2>Математика</h2>
+  <p>10! = <b>${factorial(10).toLocaleString('uk-UA')}</b></p>
+  <p>Перші 15 чисел Фібоначчі: <b>${fib(15).join(', ')}</b></p>
+  <p>Прості числа до 60: <b>${primes(60).join(', ')}</b></p>
+  <p>Сума квадратів 1…10: <b>${Array.from({ length: 10 }, (_, i) => (i + 1) ** 2).reduce((a, b) => a + b, 0)}</b></p>`;
+    </script>
+  </main>
+  <footer class="site">
+    <div class="container">Богдан, 2381</div>
+  </footer>
+</body>
+
+</html>

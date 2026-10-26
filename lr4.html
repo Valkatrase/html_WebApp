@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ЛР 4</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="site">
+    <div class="container">
+      <div class="brand">WebApp</div>
+      <nav class="menu">
+        <a href="index.html">ЛР 1</a>
+        <a href="lr2.html">ЛР 2</a>
+        <a href="lr3.html">ЛР 3</a>
+        <a href="lr4.html" class="active">ЛР 4</a>
+        <a href="lr5.php">ЛР 5</a>
+        <a href="lr6.php">ЛР 6</a>
+        <a href="lr7.php">ЛР 7</a>
+        <a href="lr8.php">ЛР 8</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <h1>ЛР 4</h1>
+
+    <div class="card">
+      <div class="inline">
+        <div class="field" style="flex:2"><label for="q">Пошук за назвою або автором</label><input id="q"
+            placeholder="Почніть вводити…"></div>
+        <div class="field"><label for="genre">Жанр</label><select id="genre">
+            <option value="all">Усі жанри</option>
+          </select></div>
+        <div class="field"><label for="sort">Сортування</label>
+          <select id="sort">
+            <option value="title">За назвою</option>
+            <option value="year">За роком</option>
+            <option value="price">За ціною</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn ghost small" id="tgAdd">Форма додавання</button>
+      <button class="btn ghost small" id="tgStats">Статистика</button>
+    </div>
+
+    <div class="card hidden" id="stats"></div>
+
+    <div class="card accent hidden" id="addPanel">
+      <h2>Нова книга</h2>
+      <div class="inline">
+        <div class="field"><label for="nt">Назва</label><input id="nt"></div>
+        <div class="field"><label for="na">Автор</label><input id="na"></div>
+      </div>
+      <div class="inline">
+        <div class="field"><label for="ny">Рік</label><input id="ny" inputmode="numeric"></div>
+        <div class="field"><label for="ng">Жанр</label><input id="ng"></div>
+        <div class="field"><label for="np">Ціна, грн</label><input id="np" inputmode="numeric"></div>
+      </div>
+      <button class="btn" id="btnAdd">Додати книгу</button>
+      <div class="msg" id="addMsg"></div>
+    </div>
+
+    <p class="muted" id="count" style="margin-bottom:10px"></p>
+    <div class="grid-3" id="list"></div>
+
+    <script>
+      const $ = id => document.getElementById(id);
+      const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+      class Book {
+        constructor(id, title, author, year, genre, price) {
+          Object.assign(this, { id, title, author, year, genre, price });
+        }
+        get age() { return new Date().getFullYear() - this.year; }
+        get isClassic() { return this.age >= 50; }
+      }
+
+      const books = [
+        new Book(1, 'Чистий код', 'Роберт Мартін', 2008, 'Програмування', 650),
+        new Book(2, 'Рефакторинг', 'Мартін Фаулер', 1999, 'Програмування', 720),
+        new Book(3, 'Eloquent JavaScript', 'Marijn Haverbeke', 2011, 'Програмування', 500),
+        new Book(4, 'Кобзар', 'Тарас Шевченко', 1840, 'Поезія', 300),
+        new Book(5, 'Тіні забутих предків', 'Михайло Коцюбинський', 1911, 'Проза', 180),
+        new Book(6, 'Дюна', 'Френк Герберт', 1965, 'Фантастика', 420),
+        new Book(7, '1984', 'Джордж Орвелл', 1949, 'Фантастика', 250),
+        new Book(8, 'Вступ до алгоритмів', 'Томас Кормен', 1990, 'Алгоритми', 980)
+      ];
+      let nextId = books.length + 1;
+
+      function fillGenres() {
+        const sel = $('genre'), cur = sel.value;
+        sel.innerHTML = '<option value="all">Усі жанри</option>';
+        [...new Set(books.map(b => b.genre))].sort().forEach(g => sel.innerHTML += `<option>${esc(g)}</option>`);
+        sel.value = [...sel.options].some(o => o.value === cur) ? cur : 'all';
+      }
+
+      function render() {
+        const q = $('q').value.trim().toLowerCase(), g = $('genre').value, s = $('sort').value;
+        const list = books
+          .filter(b => (g === 'all' || b.genre === g) && (b.title + ' ' + b.author).toLowerCase().includes(q))
+          .sort((a, b) => s === 'title' ? a.title.localeCompare(b.title, 'uk') : a[s] - b[s]);
+        $('count').textContent = 'Знайдено: ' + list.length + ' з ' + books.length;
+        const box = $('list'); box.innerHTML = '';
+        if (!list.length) { box.innerHTML = '<div class="card">Нічого не знайдено.</div>'; }
+        list.forEach(b => {
+          const d = document.createElement('div');
+          d.className = 'card';
+          d.innerHTML = `<h3>${esc(b.title)}</h3><div class="muted">${esc(b.author)}</div>
+      <span class="badge">${esc(b.genre)}</span>${b.isClassic ? ' <span class="badge">класика</span>' : ''}
+      <div class="details hidden muted">Рік: ${b.year} (${b.age} р. тому)<br>Ціна: ${b.price} грн</div>
+      <button class="btn ghost small" style="margin-top:8px">...</button>`;
+          d.querySelector('button').onclick = e => {
+            const det = d.querySelector('.details');
+            det.classList.toggle('hidden');
+            e.target.textContent = det.classList.contains('hidden') ? '...' : 'Сховати';
+          };
+          box.appendChild(d);
+        });
+        const avg = books.reduce((t, b) => t + b.price, 0) / books.length;
+        const old = books.reduce((m, b) => b.year < m.year ? b : m);
+        $('stats').innerHTML = `<div class="stats">
+    <div class="stat"><b>${books.length}</b>книг у каталозі</div>
+    <div class="stat"><b>${Math.round(avg)} грн</b>середня ціна</div>
+    <div class="stat"><b>${old.year}</b>найстаріша: ${esc(old.title)}</div></div>`;
+      }
+
+      $('tgAdd').onclick = () => $('addPanel').classList.toggle('hidden');
+      $('tgStats').onclick = () => $('stats').classList.toggle('hidden');
+      ['q', 'genre', 'sort'].forEach(id => $(id).addEventListener('input', render));
+
+      $('btnAdd').onclick = () => {
+        const t = $('nt').value.trim(), a = $('na').value.trim(), y = Number($('ny').value),
+          g = $('ng').value.trim(), p = Number($('np').value), m = $('addMsg');
+        const bad = !t || !a || !g || !Number.isInteger(y) || y < 1000 || y > new Date().getFullYear() || !(p > 0);
+        if (bad) { m.className = 'msg err'; m.textContent = 'Заповніть усі поля'; return; }
+        books.push(new Book(nextId++, t, a, y, g, p));
+        ['nt', 'na', 'ny', 'ng', 'np'].forEach(id => $(id).value = '');
+        m.className = 'msg ok'; m.textContent = 'Книгу «' + t + '» додано.';
+        fillGenres(); render();
+      };
+
+      fillGenres(); render();
+    </script>
+  </main>
+  <footer class="site">
+    <div class="container">Богдан, 2381</div>
+  </footer>
+</body>
+
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ЛР 3</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="site">
+    <div class="container">
+      <div class="brand">WebApp</div>
+      <nav class="menu">
+        <a href="index.html">ЛР 1</a>
+        <a href="lr2.html">ЛР 2</a>
+        <a href="lr3.html" class="active">ЛР 3</a>
+        <a href="lr4.html">ЛР 4</a>
+        <a href="lr5.php">ЛР 5</a>
+        <a href="lr6.php">ЛР 6</a>
+        <a href="lr7.php">ЛР 7</a>
+        <a href="lr8.php">ЛР 8</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <h1>ЛР 3</h1>
+
+    <div class="card accent">
+      <h2>Квадратне рівняння ax² + bx + c = 0</h2>
+      <div class="inline">
+        <div class="field"><label for="qa">A</label><input id="qa" value="1"></div>
+        <div class="field"><label for="qb">B</label><input id="qb" value="-3"></div>
+        <div class="field"><label for="qc">C</label><input id="qc" value="2"></div>
+      </div>
+      <button class="btn" id="btnQ">Розв’язати</button>
+      <div class="msg" id="outQ"></div>
+    </div>
+
+    <div class="card">
+      <h2>Калькулятор</h2>
+      <div class="inline">
+        <div class="field"><label for="ca">A</label><input id="ca" value="12"></div>
+        <div class="field"><label for="cop">Дія</label>
+          <select id="cop">
+            <option value="+">A + B</option>
+            <option value="-">A − B</option>
+            <option value="*">A × B</option>
+            <option value="/">A ÷ B</option>
+            <option value="^">A ^ B</option>
+            <option value="%">A mod B</option>
+          </select>
+        </div>
+        <div class="field"><label for="cb">B</label><input id="cb" value="5"></div>
+      </div>
+      <button class="btn" id="btnC">Обчислити</button>
+      <div class="msg" id="outC"></div>
+    </div>
+
+    <div class="card">
+      <h2>НСД і НСК двох цілих чисел</h2>
+      <div class="inline">
+        <div class="field"><label for="ga">Число 1</label><input id="ga" value="48"></div>
+        <div class="field"><label for="gb">Число 2</label><input id="gb" value="180"></div>
+      </div>
+      <button class="btn" id="btnG">Знайти</button>
+      <div class="msg" id="outG"></div>
+    </div>
+
+    <script>
+      const $ = id => document.getElementById(id);
+      const fmt = x => Number(x.toFixed(6));
+      function num(id) {
+        const v = $(id).value.trim().replace(',', '.');
+        return (v === '' || isNaN(v)) ? null : Number(v);
+      }
+      function show(el, text, ok) { el.className = 'msg ' + (ok ? 'ok' : 'err'); el.textContent = text; }
+
+      $('btnQ').onclick = () => {
+        const a = num('qa'), b = num('qb'), c = num('qc'), out = $('outQ');
+        if ([a, b, c].includes(null)) return show(out, 'Введіть числа в усі три поля (a, b, c).', false);
+        if (a === 0) {
+          if (b === 0) return show(out, c === 0 ? 'Рівняння має безліч розв’язків.' : 'Розв’язків немає.', c === 0);
+          return show(out, 'Це лінійне рівняння: x = ' + fmt(-c / b), true);
+        }
+        const D = b * b - 4 * a * c;
+        if (D < 0) return show(out, 'D = ' + fmt(D) + ' < 0. Дійсних коренів немає.', false);
+        if (D === 0) return show(out, 'D = 0. Один корінь: x = ' + fmt(-b / (2 * a)), true);
+        const s = Math.sqrt(D);
+        show(out, 'D = ' + fmt(D) + '. x₁ = ' + fmt((-b + s) / (2 * a)) + ', x₂ = ' + fmt((-b - s) / (2 * a)), true);
+      };
+
+      $('btnC').onclick = () => {
+        const a = num('ca'), b = num('cb'), op = $('cop').value, out = $('outC');
+        if (a === null || b === null) return show(out, 'Обидва поля мають містити числа.', false);
+        if ((op === '/' || op === '%') && b === 0) return show(out, 'Ділити на нуль не можна.', false);
+        const r = { '+': a + b, '-': a - b, '*': a * b, '/': a / b, '^': Math.pow(a, b), '%': a % b }[op];
+        if (!isFinite(r)) return show(out, 'Результат не є скінченним числом.', false);
+        show(out, a + ' ' + op + ' ' + b + ' = ' + fmt(r), true);
+      };
+
+      const gcd = (x, y) => y === 0 ? x : gcd(y, x % y);
+      $('btnG').onclick = () => {
+        const a = num('ga'), b = num('gb'), out = $('outG');
+        if (a === null || b === null || !Number.isInteger(a) || !Number.isInteger(b) || a < 1 || b < 1)
+          return show(out, 'Потрібні два натуральні числа', false);
+        const g = gcd(a, b);
+        show(out, 'НСД = ' + g + ', НСК = ' + (a / g * b), true);
+      };
+    </script>
+  </main>
+  <footer class="site">
+    <div class="container">Богдан, 2381</div>
+  </footer>
+</body>
+
+</html>

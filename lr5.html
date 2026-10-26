@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ЛР 5</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="site">
+    <div class="container">
+      <div class="brand">WebApp</div>
+      <nav class="menu">
+        <a href="index.html">ЛР 1</a>
+        <a href="lr2.html">ЛР 2</a>
+        <a href="lr3.html">ЛР 3</a>
+        <a href="lr4.html">ЛР 4</a>
+        <a href="lr5.html" class="active">ЛР 5</a>
+        <a href="lr6.html">ЛР 6</a>
+        <a href="lr7.html">ЛР 7</a>
+        <a href="lr8.html">ЛР 8</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <h1>ЛР 5</h1>
+    <p class="lead">Дані користувачів завантажуються з <code>jsonplaceholder.typicode.com</code> через
+      <code>fetch</code>.
+    </p>
+
+    <div class="card">
+      <div class="inline">
+        <div class="field" style="flex:3"><label for="q">Пошук за іменем, e-mail або іншим</label><input id="q"
+            placeholder="Наприклад: Leanne"></div>
+        <div class="field" style="flex:0;align-self:flex-end"><button class="btn" id="reload">Оновити</button></div>
+      </div>
+      <button class="btn ghost small" id="tgJson">Показати JSON</button>
+      <pre class="hidden" id="raw"></pre>
+    </div>
+
+    <div class="msg" id="status"></div>
+    <p class="muted" id="count" style="margin:10px 0"></p>
+    <div class="grid-2" id="list"></div>
+
+    <script>
+      const API = 'https://jsonplaceholder.typicode.com';
+      const $ = id => document.getElementById(id);
+      const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      let users = [];
+
+      async function getJSON(url) {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('Сервер ' + r.status);
+        return r.json();
+      }
+
+      async function load() {
+        const st = $('status');
+        st.className = 'msg ok'; st.textContent = 'Завантаження даних…';
+        try {
+          users = await getJSON(API + '/users');
+          $('raw').textContent = JSON.stringify(users[0], null, 2);
+          st.className = 'msg'; st.textContent = '';
+          draw();
+        } catch (e) {
+          st.className = 'msg err';
+          st.textContent = 'Не вдалося завантажити дані: ' + e.message + '. Натисніть «Оновити».';
+        }
+      }
+
+      function draw() {
+        const q = $('q').value.trim().toLowerCase();
+        const found = users.filter(u => (u.name + u.email + u.address.city).toLowerCase().includes(q));
+        $('count').textContent = 'Показано: ' + found.length + ' з ' + users.length;
+        const box = $('list'); box.innerHTML = '';
+        found.forEach(u => {
+          const d = document.createElement('div');
+          d.className = 'card';
+          d.innerHTML = `<h3>${esc(u.name)} <span class="muted">@${esc(u.username)}</span></h3>
+      <div class="muted">${esc(u.email)}</div>
+      <div class="muted">${esc(u.address.city)}, ${esc(u.address.street)}</div>
+      <span class="badge">${esc(u.company.name)}</span><br>
+      <a href="http://${esc(u.website)}" target="_blank" rel="noopener">${esc(u.website)}</a>
+      <div class="posts" style="margin-top:8px"></div>
+      <button class="btn ghost small" style="margin-top:8px">Ще</button>`;
+          d.querySelector('button').onclick = async e => {
+            const p = d.querySelector('.posts');
+            if (p.dataset.loaded) { p.classList.toggle('hidden'); return; }
+            p.textContent = 'Завантаження…';
+            try {
+              const posts = (await getJSON(API + '/posts?userId=' + u.id)).slice(0, 3);
+              p.innerHTML = posts.map(x => `<div class="card" style="margin:6px 0;padding:10px"><b>${esc(x.title)}</b></div>`).join('');
+              p.dataset.loaded = '1';
+              e.target.textContent = 'Сховати / показати пости';
+            } catch (err) { p.textContent = 'Помилка: ' + err.message; }
+          };
+          box.appendChild(d);
+        });
+      }
+
+      $('q').addEventListener('input', draw);
+      $('reload').onclick = load;
+      $('tgJson').onclick = () => $('raw').classList.toggle('hidden');
+      load();
+    </script>
+  </main>
+  <footer class="site">
+    <div class="container">Богдан, 2381</div>
+  </footer>
+</body>
+
+</html>

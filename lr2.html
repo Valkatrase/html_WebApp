@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ЛР 2</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="site">
+    <div class="container">
+      <div class="brand">WebApp</div>
+      <nav class="menu">
+        <a href="index.html">ЛР 1</a>
+        <a href="lr2.html" class="active">ЛР 2</a>
+        <a href="lr3.html">ЛР 3</a>
+        <a href="lr4.html">ЛР 4</a>
+        <a href="lr5.php">ЛР 5</a>
+        <a href="lr6.php">ЛР 6</a>
+        <a href="lr7.php">ЛР 7</a>
+        <a href="lr8.php">ЛР 8</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <h1>ЛР 2</h1>
+    <div class="layout-3">
+      <aside class="card">
+        <h3>Розділи</h3>
+        <ul class="side-list">
+          <li>Контейнер</li>
+          <li>Сітка</li>
+          <li>Колонки</li>
+          <li>Адаптивність</li>
+        </ul>
+      </aside>
+      <section class="card accent">
+        <h2>Основний вміст</h2>
+        <p>Центральна колонка займає весь вільний простір (<code>1fr</code>), бічні мають фіксовану ширину: 200px і
+          220px.</p>
+        <p style="margin-top:10px">Усе тримається на <code>display: grid</code>. Коли екран вужчий за 760px, колонки
+          стають одна під одною.</p>
+        <pre>.layout-3{
+  display:grid;
+  grid-template-columns:200px 1fr 220px;
+  gap:16px;
+}</pre>
+      </section>
+      <aside class="card owner">
+        <div class="avatar">Б</div>
+        <h3>Богдан</h3>
+        <span class="badge">2381</span>
+      </aside>
+    </div>
+  </main>
+  <footer class="site">
+    <div class="container">Богдан, 2381</div>
+  </footer>
+</body>
+
+</html>

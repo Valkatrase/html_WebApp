@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ЛР 7</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="site">
+    <div class="container">
+      <div class="brand">WebApp</div>
+      <nav class="menu">
+        <a href="index.html">ЛР 1</a>
+        <a href="lr2.html">ЛР 2</a>
+        <a href="lr3.html">ЛР 3</a>
+        <a href="lr4.html">ЛР 4</a>
+        <a href="lr5.html">ЛР 5</a>
+        <a href="lr6.html">ЛР 6</a>
+        <a href="lr7.html" class="active">ЛР 7</a>
+        <a href="lr8.html">ЛР 8</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <h1>ЛР 7</h1>
+    </div>
+    <div class="grid-2">
+      <div class="card accent">
+        <h2>Дані користувача</h2>
+        <form method="get" action="lr7.html">
+          <div class="field"><label for="name">Ім'я</label><input id="name" name="name" required></div>
+          <div class="field"><label for="email">E-mail</label><input id="email" name="email" type="email" required>
+          </div>
+          <div class="inline">
+            <div class="field"><label for="age">Вік</label><input id="age" name="age" required></div>
+            <div class="field"><label for="height">Зріст(см)</label><input id="height" name="height" required></div>
+            <div class="field"><label for="weight">Вага(кг)</label><input id="weight" name="weight" required></div>
+          </div>
+          <button class="btn" type="submit">Розрахувати</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Результат</h2>
+        <div id="res">
+        </div>
+      </div>
+    </div>
+    <script>
+      const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const p = new URLSearchParams(location.search);
+      const f = ['name', 'email', 'age', 'height', 'weight'];
+      if (f.some(k => p.has(k))) {
+        const v = {}; f.forEach(k => { v[k] = (p.get(k) || '').trim(); document.getElementById(k).value = v[k]; });
+        const err = [];
+        if (v.name.length < 2 || v.name.length > 50) err.push('Ім’я має бути від 2 до 50 символів');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) err.push('Некоректний e-mail.');
+        if (!/^\d+$/.test(v.age) || +v.age < 1 || +v.age > 120) err.push('Вік — число від 1 до 120.');
+        const h = v.height.replace(',', '.'), w = v.weight.replace(',', '.');
+        if (h === '' || isNaN(h) || h < 50 || h > 250) err.push('Зріст — від 50 до 250 см.');
+        if (w === '' || isNaN(w) || w < 10 || w > 400) err.push('Вага — від 10 до 400 кг.');
+        const out = document.getElementById('res');
+        if (err.length) out.innerHTML = '<div class="msg err">' + err.join('<br>') + '</div>';
+        else {
+          const m = h / 100, bmi = w / (m * m);
+          const cat = bmi < 18.5 ? 'Недостатня вага' : bmi < 25 ? 'Норма' : bmi < 30 ? 'Надлишкова вага' : 'Ожиріння';
+          out.innerHTML = `<p>${esc(v.name)} (${esc(v.age)} р.), результат для ${esc(v.email)}.</p>
+      <div class="stats" style="margin-top:10px"><div class="stat"><b>${bmi.toFixed(1)}</b>ІМТ</div><div class="stat"><b style="font-size:16px">${cat}</b>категорія</div></div>
+      <p class="muted">Нормальна вага для вашого зросту: ${(18.5 * m * m).toFixed(1)}–${(24.9 * m * m).toFixed(1)} кг.</p>`;
+        }
+      }
+    </script>
+  </main>
+  <footer class="site">
+    <div class="container">Богдан, 2381</div>
+  </footer>
+</body>
+
+</html>
